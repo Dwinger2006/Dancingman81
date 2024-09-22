@@ -40,12 +40,12 @@
       
             loadProj4(function() {
                 if (proj4) {
-                    // Konvertiere WGS84-Koordinaten (Längengrad/Breitengrad) in UTM Zone 31N
+                    // Konvertiere WGS84-Koordinaten (Längengrad/Breitengrad) in LUREF
                     var wgs84Proj = "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs";
-                    var utmProj = "+proj=utm +zone=31 +ellps=WGS84 +units=m +no_defs";  // UTM Zone 31N für Luxemburg
-                    var utm = proj4(wgs84Proj, utmProj, [lon, lat]);  // Umwandlung von Längengrad/Breitengrad in UTM (X, Y)
+                    var lurefProj = "+proj=lcc +lat_1=49.833333 +lat_2=51.166667 +lat_0=49 +lon_0=6 +x_0=80000 +y_0=100000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs";  // LUREF Projektion
+                    var luref = proj4(wgs84Proj, lurefProj, [lon, lat]);  // Umwandlung von Längengrad/Breitengrad in LUREF (X, Y)
       
-                    var mapsUrl = 'https://map.geoportail.lu/theme/main?lang=de&version=3&zoom=' + zoom + '&X=' + utm[0] + '&Y=' + utm[1] + '&rotation=0&layers=549-542-302-269-320-2056-351-152-685-686&opacities=1-0-0-0-1-0-1-1-1-1&time=------------------&bgLayer=streets_jpeg&crosshair=true';
+                    var mapsUrl = 'https://map.geoportail.lu/theme/main?lang=de&version=3&zoom=' + zoom + '&X=' + luref[0] + '&Y=' + luref[1] + '&rotation=0&layers=549-542-302-269-320-2056-351-152-685-686&opacities=1-0-0-0-1-0-1-1-1-1&time=------------------&bgLayer=streets_jpeg&crosshair=true';
                     
                     window.open(mapsUrl, '_blank');
                 }

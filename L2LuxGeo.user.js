@@ -9,10 +9,23 @@
 // @author       Dancingman81
 // ==/UserScript==
 
+// ==UserScript==
+// @name         WME Link to Geoportal Luxembourg and Traffic Info
+// @description  Adds buttons to Waze Map Editor to open the Geoportal of Luxembourg and the Luxembourg traffic info portal.
+// @namespace    https://github.com/Dwinger2006/Dancingman81   
+// @version      2024.09.22.13
+// @include      https://*.waze.com/editor*
+// @include      https://*.waze.com/*/editor*
+// @grant        none
+// @author       Dancingman81
+// ==/UserScript==
+
 (function() {
     'use strict';
 
+    // Function to create Luxembourg Geoportal Button
     function createLuxButton() {
+        console.log("Creating Geoportal Luxemburg button");
         var lux_btn = $('<button style="width: 285px;height: 24px; font-size:85%;color: Green;border-radius: 5px;border: 0.5px solid lightgrey; background: white; margin-bottom: 10px;">Geoportal Luxemburg</button>');
         
         lux_btn.click(function() {
@@ -30,7 +43,9 @@
         return lux_btn;
     }
 
+    // Function to create Luxembourg Traffic Info Button
     function createTrafficButton() {
+        console.log("Creating Traffic Info button");
         var traffic_btn = $('<button style="width: 285px;height: 24px; font-size:85%;color: Red;border-radius: 5px;border: 0.5px solid lightgrey; background: white;">Verkehrsinformationen Luxemburg</button>');
         
         traffic_btn.click(function() {
@@ -41,12 +56,16 @@
         return traffic_btn;
     }
 
+    // Function to add the buttons to the WME side panel
     function addButtons() {
+        console.log("Adding buttons...");
+        
         if (document.getElementById('user-info') == null) {
             setTimeout(addButtons, 500);
             return;
         }
 
+        // Check if the panel already exists to avoid duplicate additions
         if (document.getElementById("sidepanel-lux") !== null) {
             console.log("Buttons already exist.");
             return;
@@ -68,9 +87,14 @@
         addon.className = "tab-pane";
         tabContent.appendChild(addon);
 
-        // Füge beide Buttons hinzu
-        $("#sidepanel-lux").append(createLuxButton());
-        $("#sidepanel-lux").append(createTrafficButton());
+        // Add both buttons to the panel
+        var luxButton = createLuxButton();
+        var trafficButton = createTrafficButton();
+        
+        $("#sidepanel-lux").append(luxButton);
+        $("#sidepanel-lux").append(trafficButton);
+
+        console.log("Buttons added successfully");
     }
 
     addButtons();

@@ -80,7 +80,8 @@
         $("#sidepanel-lux").append(lux_btn);
     }
   
-    addButton();  // Call the function to add the button
+    // Add the button after page load
+    addButton(); 
   
     // Function to dynamically load Proj4js for coordinate transformation
     function loadProj4(callback) {
@@ -96,5 +97,4 @@
         var found = link.indexOf('livemap');
         return (found === -1) ? 13 : 2;
     }
-  })();
-  
+})();

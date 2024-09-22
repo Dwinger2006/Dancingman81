@@ -2,7 +2,7 @@
 // @name         WME Link to Geoportal Luxembourg
 // @description  Adds a button to Waze Map Editor to open the Geoportal of Luxembourg with the coordinates of the current WME location.
 // @namespace    https://github.com/YOUR_GITHUB_USER/WME-Luxembourg
-// @version      2024.09.22.01
+// @version      2024.09.22.02
 // @include      https://*.waze.com/editor*
 // @include      https://*.waze.com/*/editor*
 // @grant        none
@@ -20,11 +20,30 @@
       return link.substr(pos, len);
   }
 
-  // Function to correct zoom levels
-  function CorrectZoom(link) {
-      var found = link.indexOf('livemap');
-      return (-1 == found) ? 13 : 2;
-  }
+  // Function to adjust zoom for Geoportal Luxembourg
+function adjustZoomForGeoportal(wmeZoom) {
+    // Verwende eine einfache Subtraktion als Offset, um den Zoom-Level zu korrigieren
+    // Der Zoom-Level in WME ist oft höher als im Geoportal, daher müssen wir ihn verringern
+    return wmeZoom - 6;  // Hier kannst du mit dem Wert experimentieren
+}
+
+lux_btn.click(function() {
+    var href = $('.WazeControlPermalink a').attr('href');
+
+    var lon = parseFloat(getQueryString(href, 'lon'));
+    var lat = parseFloat(getQueryString(href, 'lat'));
+    var zoom = parseInt(getQueryString(href, 'zoom')) + CorrectZoom(href);
+
+    // Passe den Zoom-Level an
+    zoom = adjustZoomForGeoportal(zoom);
+
+    loadProj4(function() {
+        if (proj4) {
+            var firstProj = "+proj=utm +zone=31 +ellps=WGS84 +units=m +no_defs";
+            var utm = proj4(firstProj, [lon, lat]);
+
+            var mapsUrl = 'https://map.geoportail.lu/theme/main?lang=de&version=3&zoom=' + zoom + '&X=' + utm[0] + '&Y=' + utm[1] + '&rotation=0&layers=549-542-302-269-320-2056-351-152-685-686&opacities
+
 
   // Function to dynamically load Proj4js for coordinate transformation
   function loadProj4(callback) {

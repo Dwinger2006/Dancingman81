@@ -2,7 +2,7 @@
 // @name         WME Link to Geoportal Luxembourg
 // @description  Adds a button to Waze Map Editor to open the Geoportal of Luxembourg with the coordinates of the current WME location.
 // @namespace    https://github.com/Dwinger2006/Dancingman81   
-// @version      2024.09.22.04
+// @version      2024.09.22.06
 // @include      https://*.waze.com/editor*
 // @include      https://*.waze.com/*/editor*
 // @grant        none
@@ -22,42 +22,49 @@
   
     // Function to adjust zoom for Geoportal Luxembourg
     function adjustZoomForGeoportal(wmeZoom) {
-        // Verwende den WME-Zoom-Level direkt oder nimm eine kleine Korrektur vor
-        return wmeZoom;  // Standardmäßig keine Anpassung nötig, falls der Zoom passt
+        return wmeZoom;
     }
   
     // Create the button for Luxembourg Geoportal
-    var lux_btn = $('<button style="width: 285px;height: 24px; font-size:85%;color: Green;border-radius: 5px;border: 0.5px solid lightgrey; background: white">Geoportal Luxemburg</button>');
-  
-    lux_btn.click(function() {
-        var href = $('.WazeControlPermalink a').attr('href');
-  
-        var lon = parseFloat(getQueryString(href, 'lon'));  // Longitude
-        var lat = parseFloat(getQueryString(href, 'lat'));  // Latitude
-        var zoom = parseInt(getQueryString(href, 'zoom')) + CorrectZoom(href);
-  
-        // Passe den Zoom-Level für das Geoportal an
-        zoom = adjustZoomForGeoportal(zoom);
-  
-        loadProj4(function() {
-            if (proj4) {
-                // Umrechnung von WGS84 (lon, lat) nach UTM Zone 31N
-                var firstProj = "+proj=utm +zone=31 +ellps=WGS84 +units=m +no_defs";  // UTM Zone 31N für Luxemburg
-                var utm = proj4(firstProj, [lon, lat]);  // Umwandlung von Längen-/Breitengrad in UTM (X, Y)
-  
-                var mapsUrl = 'https://map.geoportail.lu/theme/main?lang=de&version=3&zoom=' + zoom + '&X=' + utm[0] + '&Y=' + utm[1] + '&rotation=0&layers=549-542-302-269-320-2056-351-152-685-686&opacities=1-0-0-0-1-0-1-1-1-1&time=------------------&bgLayer=streets_jpeg&crosshair=true';
-                
-                window.open(mapsUrl, '_blank');
-            }
+    function createLuxButton() {
+        var lux_btn = $('<button style="width: 285px;height: 24px; font-size:85%;color: Green;border-radius: 5px;border: 0.5px solid lightgrey; background: white">Geoportal Luxemburg</button>');
+      
+        lux_btn.click(function() {
+            var href = $('.WazeControlPermalink a').attr('href');
+      
+            var lon = parseFloat(getQueryString(href, 'lon'));
+            var lat = parseFloat(getQueryString(href, 'lat'));
+            var zoom = parseInt(getQueryString(href, 'zoom')) + CorrectZoom(href);
+      
+            zoom = adjustZoomForGeoportal(zoom);
+      
+            loadProj4(function() {
+                if (proj4) {
+                    var firstProj = "+proj=utm +zone=31 +ellps=WGS84 +units=m +no_defs";
+                    var utm = proj4(firstProj, [lon, lat]);
+      
+                    var mapsUrl = 'https://map.geoportail.lu/theme/main?lang=de&version=3&zoom=' + zoom + '&X=' + utm[0] + '&Y=' + utm[1] + '&rotation=0&layers=549-542-302-269-320-2056-351-152-685-686&opacities=1-0-0-0-1-0-1-1-1-1&time=------------------&bgLayer=streets_jpeg&crosshair=true';
+                    
+                    window.open(mapsUrl, '_blank');
+                }
+            });
         });
-    });
-  
+
+        return lux_btn;
+    }
+
     // Insert the button into the WME sidepanel
     function addButton() {
         if (document.getElementById('user-info') == null) {
             setTimeout(addButton, 500);
             console.log('user-info element not yet available, page still loading');
             return;
+        }
+
+        // Check if the button already exists
+        if (document.getElementById("sidepanel-lux") !== null) {
+            console.log("Button already exists.");
+            return; // Exit if the button is already present
         }
   
         var addon = document.createElement('section');
@@ -77,11 +84,10 @@
         addon.className = "tab-pane";
         tabContent.appendChild(addon);
   
-        $("#sidepanel-lux").append(lux_btn);
+        $("#sidepanel-lux").append(createLuxButton());
     }
   
-    // Add the button after page load
-    addButton(); 
+    addButton();
   
     // Function to dynamically load Proj4js for coordinate transformation
     function loadProj4(callback) {

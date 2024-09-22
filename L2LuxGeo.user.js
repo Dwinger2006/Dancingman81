@@ -2,7 +2,7 @@
 // @name         WME Link to Geoportal Luxembourg and Traffic Info
 // @description  Adds buttons to Waze Map Editor to open the Geoportal of Luxembourg and the Luxembourg traffic info portal.
 // @namespace    https://github.com/Dwinger2006/Dancingman81   
-// @version      2024.09.22.12
+// @version      2024.09.22.13
 // @include      https://*.waze.com/editor*
 // @include      https://*.waze.com/*/editor*
 // @grant        none
@@ -13,7 +13,7 @@
     'use strict';
 
     function createLuxButton() {
-        var lux_btn = $('<button style="width: 285px;height: 24px; font-size:85%;color: Green;border-radius: 5px;border: 0.5px solid lightgrey; background: white">Geoportal Luxemburg</button>');
+        var lux_btn = $('<button style="width: 285px;height: 24px; font-size:85%;color: Green;border-radius: 5px;border: 0.5px solid lightgrey; background: white; margin-bottom: 10px;">Geoportal Luxemburg</button>');
         
         lux_btn.click(function() {
             var href = $('.WazeControlPermalink a').attr('href');
@@ -23,7 +23,6 @@
 
             zoom = adjustZoomForGeoportal(zoom);
 
-            // Beispiel: Logik für das Geoportal Luxemburg (bereits implementiert)
             var mapsUrl = 'https://map.geoportail.lu/theme/main?lang=de&version=3&zoom=' + zoom + '&X=' + lon + '&Y=' + lat + '&rotation=0&layers=549-542-302-269-320-2056-351-152-685-686&opacities=1-0-0-0-1-0-1-1-1-1&time=------------------&bgLayer=streets_jpeg&crosshair=true';
             window.open(mapsUrl, '_blank');
         });
@@ -32,10 +31,9 @@
     }
 
     function createTrafficButton() {
-        var traffic_btn = $('<button style="width: 285px;height: 24px; font-size:85%;color: Red;border-radius: 5px;border: 0.5px solid lightgrey; background: white">Verkehrsinformationen Luxemburg</button>');
+        var traffic_btn = $('<button style="width: 285px;height: 24px; font-size:85%;color: Red;border-radius: 5px;border: 0.5px solid lightgrey; background: white;">Verkehrsinformationen Luxemburg</button>');
         
         traffic_btn.click(function() {
-            // Öffne das Verkehrs-Geoportal in einem neuen Tab
             var trafficUrl = 'https://travaux.public.lu/fr/infos-trafic/chantiers/routes.html';
             window.open(trafficUrl, '_blank');
         });
@@ -56,7 +54,7 @@
 
         var addon = document.createElement('section');
         addon.id = "lux-addon";
-        addon.innerHTML = '<b><p style="font-family:verdana"; "font-size:16px">PORTALE LUXEMBURG</b></p>';
+        addon.innerHTML = '<b><p style="font-family:verdana; font-size:16px;">PORTALE LUXEMBURG</b></p>';
 
         var userTabs = document.getElementById('user-info');
         var navTabs = document.getElementsByClassName('nav-tabs', userTabs)[0];

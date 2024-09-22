@@ -2,7 +2,7 @@
 // @name         WME Link to Geoportal Luxembourg
 // @description  Adds a button to Waze Map Editor to open the Geoportal of Luxembourg with the coordinates of the current WME location.
 // @namespace    https://github.com/Dwinger2006/Dancingman81   
-// @version      2024.09.22.09
+// @version      2024.09.22.10
 // @include      https://*.waze.com/editor*
 // @include      https://*.waze.com/*/editor*
 // @grant        none
@@ -38,6 +38,8 @@
 
             zoom = adjustZoomForGeoportal(zoom);
 
+            console.log("WGS84 Koordinaten: Längengrad =", lon, "Breitengrad =", lat);
+
             // Check if Proj4js is available before transforming coordinates
             if (typeof proj4 !== 'undefined') {
                 try {
@@ -45,10 +47,12 @@
                     var wgs84Proj = "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs";
 
                     // LUREF Projektion (Luxemburg)
-                    var lurefProj = "+proj=lcc +lat_1=49.833333 +lat_2=51.166667 +lat_0=49 +lon_0=6 +x_0=80000 +y_0=100000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs";  // LUREF-Projektion
+                    var lurefProj = "+proj=lcc +lat_1=49.833333 +lat_2=51.166667 +lat_0=49 +lon_0=6 +x_0=80000 +y_0=100000 +ellps=GRS80 +units=m +no_defs";
 
                     // Umwandlung von WGS84 (Längengrad/Breitengrad) in LUREF (X, Y)
                     var luref = proj4(wgs84Proj, lurefProj, [lon, lat]);
+
+                    console.log("Umgewandelte LUREF-Koordinaten: X =", luref[0], "Y =", luref[1]);
 
                     // Erstelle die Geoportal-URL mit den umgewandelten LUREF-Koordinaten
                     var mapsUrl = 'https://map.geoportail.lu/theme/main?lang=de&version=3&zoom=' + zoom + '&X=' + luref[0] + '&Y=' + luref[1] + '&rotation=0&layers=549-542-302-269-320-2056-351-152-685-686&opacities=1-0-0-0-1-0-1-1-1-1&time=------------------&bgLayer=streets_jpeg&crosshair=true';

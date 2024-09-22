@@ -2,7 +2,7 @@
 // @name         WME Link to Geoportal Luxembourg
 // @description  Adds a button to Waze Map Editor to open the Geoportal of Luxembourg with the coordinates of the current WME location.
 // @namespace    https://github.com/Dwinger2006/Dancingman81   
-// @version      2024.09.22.10
+// @version      2024.09.22.11
 // @include      https://*.waze.com/editor*
 // @include      https://*.waze.com/*/editor*
 // @grant        none

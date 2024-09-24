@@ -2,18 +2,7 @@
 // @name         WME Link to Geoportal Luxembourg and Traffic Info
 // @description  Adds buttons to Waze Map Editor to open the Geoportal of Luxembourg and the Luxembourg traffic info portal.
 // @namespace    https://github.com/Dwinger2006/Dancingman81   
-// @version      2024.09.24.3
-// @include      https://*.waze.com/editor*
-// @include      https://*.waze.com/*/editor*
-// @grant        none
-// @author       Dancingman81
-// ==/UserScript==
-
-// ==UserScript==
-// @name         WME Link to Geoportal Luxembourg and Traffic Info
-// @description  Adds buttons to Waze Map Editor to open the Geoportal of Luxembourg and the Luxembourg traffic info portal.
-// @namespace    https://github.com/Dwinger2006/Dancingman81   
-// @version      2024.09.22.13
+// @version      2024.09.24.4
 // @include      https://*.waze.com/editor*
 // @include      https://*.waze.com/*/editor*
 // @grant        none
@@ -77,9 +66,13 @@
     function createTrafficButton() {
         console.log("Creating Traffic Info button");
         var traffic_btn = $('<button style="width: 285px;height: 24px; font-size:85%;color: Red;border-radius: 5px;border: 0.5px solid lightgrey; background: white;">Verkehrsinformationen Luxemburg</button>');
-        
+
         traffic_btn.click(function() {
-            var trafficUrl = 'https://travaux.public.lu/fr/infos-trafic/chantiers/routes.html';
+            var href = $('.WazeControlPermalink a').attr('href');
+            var lon = parseFloat(getQueryString(href, 'lon'));
+            var lat = parseFloat(getQueryString(href, 'lat'));
+
+            var trafficUrl = 'https://travaux.public.lu/fr/infos-trafic/chantiers/routes.html#zoom=' + 12 + '&lat=' + lat + '&lon=' + lon + '&layers=2';
             window.open(trafficUrl, '_blank');
         });
 

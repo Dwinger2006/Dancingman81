@@ -2,7 +2,7 @@
 // @name         WME Link to Geoportal Luxembourg and Traffic Info
 // @description  Adds buttons to Waze Map Editor to open the Geoportal of Luxembourg and the Luxembourg traffic info portal.
 // @namespace    https://github.com/Dwinger2006/Dancingman81   
-// @version      2024.09.25.5
+// @version      2024.09.25.6
 // @include      https://*.waze.com/editor*
 // @include      https://*.waze.com/*/editor*
 // @grant        none
@@ -24,11 +24,6 @@
         return (found === -1) ? 13 : 2;
     }
 
-    // Function to adjust zoom for Geoportal Luxembourg
-    function adjustZoomForGeoportal(wmeZoom) {
-        return wmeZoom;  // Passe den Zoom-Level für das Geoportal an
-    }
-
     // Function to create Luxembourg Geoportal Button
     function createLuxButton() {
         console.log("Creating Geoportal Luxemburg button");
@@ -39,8 +34,6 @@
             var lon = parseFloat(getQueryString(href, 'lon')); 
             var lat = parseFloat(getQueryString(href, 'lat')); 
             var zoom = parseInt(getQueryString(href, 'zoom')) + CorrectZoom(href);
-
-            zoom = adjustZoomForGeoportal(zoom);
 
             // WGS84-Projektion (EPSG:4326) zu LUREF-Projektion (EPSG:2169) umwandeln
             var wgs84Proj = "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs";
@@ -65,7 +58,7 @@
     // Function to add the buttons to the WME side panel
     function addButtons() {
         console.log("Adding buttons...");
-        
+
         if (document.getElementById('user-info') == null) {
             setTimeout(addButtons, 500);
             return;
@@ -93,12 +86,12 @@
         addon.className = "tab-pane";
         tabContent.appendChild(addon);
 
-        // Add both buttons to the panel
+        // Add the Luxembourg button to the panel
         var luxButton = createLuxButton();
         
         $("#sidepanel-lux").append(luxButton);
 
-        console.log("Buttons added successfully");
+        console.log("Button added successfully");
     }
 
     addButtons();

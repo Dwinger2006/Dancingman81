@@ -2,7 +2,7 @@
 // @name         WME Link to Geoportal Luxembourg and Traffic Info
 // @description  Adds buttons to Waze Map Editor to open the Geoportal of Luxembourg and the Luxembourg traffic info portal.
 // @namespace    https://github.com/Dwinger2006/Dancingman81   
-// @version      2024.09.26.1
+// @version      2024.09.24.5
 // @include      https://*.waze.com/editor*
 // @include      https://*.waze.com/*/editor*
 // @grant        none
@@ -18,6 +18,17 @@
         return params.get(param);
     }
 
+    // Function to adjust zoom for Geoportal Luxembourg
+    function adjustZoomForGeoportal(wmeZoom) {
+        return wmeZoom;  // Passe den Zoom-Level für das Geoportal an
+    }
+
+    // Function to correct zoom level based on whether it's a livemap or editor
+    function CorrectZoom(link) {
+        var found = link.indexOf('livemap');
+        return (found === -1) ? 13 : 2;
+    }
+
     // Function to create Luxembourg Geoportal Button
     function createLuxButton() {
         console.log("Creating Geoportal Luxemburg button");
@@ -27,7 +38,9 @@
             var href = $('.WazeControlPermalink a').attr('href');
             var lon = parseFloat(getQueryString(href, 'lon')); 
             var lat = parseFloat(getQueryString(href, 'lat')); 
-            var zoom = parseInt(getQueryString(href, 'zoom'));
+            var zoom = parseInt(getQueryString(href, 'zoom')) + CorrectZoom(href);
+
+            zoom = adjustZoomForGeoportal(zoom);
 
             // WGS84-Projektion (EPSG:4326) zu LUREF-Projektion (EPSG:2169) umwandeln
             var wgs84Proj = "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs";
@@ -53,46 +66,60 @@
     function createTrafficButton() {
         console.log("Creating Traffic Info button");
         var traffic_btn = $('<button style="width: 285px;height: 24px; font-size:85%;color: Red;border-radius: 5px;border: 0.5px solid lightgrey; background: white;">Verkehrsinformationen Luxemburg</button>');
-        
+
         traffic_btn.click(function() {
-            var trafficUrl = 'https://travaux.public.lu/fr/infos-trafic/chantiers/routes.html';
+            var href = $('.WazeControlPermalink a').attr('href');
+            var lon = parseFloat(getQueryString(href, 'lon'));
+            var lat = parseFloat(getQueryString(href, 'lat'));
+
+            // Versuch, das Portal mit aktivem zweiten Reiter zu öffnen
+            var trafficUrl = 'https://travaux.public.lu/fr/infos-trafic/chantiers/routes.html#carte-des-chantiers-routiers?zoom=' + 12 + '&lat=' + lat + '&lon=' + lon + '&layers=2';
             window.open(trafficUrl, '_blank');
         });
 
         return traffic_btn;
     }
 
-    // Function to add the buttons to the WME script area
-    function addButtonsToScriptArea() {
+    // Function to add the buttons to the WME side panel
+    function addButtons() {
         console.log("Adding buttons...");
-
-        var scriptSection = document.querySelector('.menu-items-container'); // Anpassung an das WME-Layout
-        if (!scriptSection) {
-            setTimeout(addButtonsToScriptArea, 500);
+        
+        if (document.getElementById('user-info') == null) {
+            setTimeout(addButtons, 500);
             return;
         }
 
         // Check if the panel already exists to avoid duplicate additions
-        if (document.getElementById("lux-addon") !== null) {
+        if (document.getElementById("sidepanel-lux") !== null) {
             console.log("Buttons already exist.");
             return;
         }
 
-        // Create a container for the buttons
         var addon = document.createElement('section');
         addon.id = "lux-addon";
         addon.innerHTML = '<b><p style="font-family:verdana; font-size:16px;">PORTALE LUXEMBURG</b></p>';
 
-        // Append the buttons to the script section
+        var userTabs = document.getElementById('user-info');
+        var navTabs = document.getElementsByClassName('nav-tabs', userTabs)[0];
+        var tabContent = document.getElementsByClassName('tab-content', userTabs)[0];
+
+        var newtab = document.createElement('li');
+        newtab.innerHTML = '<a href="#sidepanel-lux" data-toggle="tab">Geo + Traffic LUX</a>';
+        navTabs.appendChild(newtab);
+
+        addon.id = "sidepanel-lux";
+        addon.className = "tab-pane";
+        tabContent.appendChild(addon);
+
+        // Add both buttons to the panel
         var luxButton = createLuxButton();
         var trafficButton = createTrafficButton();
-
-        scriptSection.appendChild(addon);
-        addon.appendChild(luxButton);
-        addon.appendChild(trafficButton);
+        
+        $("#sidepanel-lux").append(luxButton);
+        $("#sidepanel-lux").append(trafficButton);
 
         console.log("Buttons added successfully");
     }
 
-    addButtonsToScriptArea();
+    addButtons();
 })();

@@ -2,7 +2,7 @@
 // @name         WME Link to Geoportal Luxembourg and Traffic Info
 // @description  Adds buttons to Waze Map Editor to open the Geoportal of Luxembourg and the Luxembourg traffic info portal.
 // @namespace    https://github.com/Dwinger2006/Dancingman81   
-// @version      2024.09.27.3
+// @version      2024.09.27.5
 // @include      https://*.waze.com/editor*
 // @include      https://*.waze.com/*/editor*
 // @grant        none
@@ -65,39 +65,33 @@
     // Function to add the button to the WME side panel
     function addButtons() {
         console.log("Adding button...");
-        
+
         if (document.getElementById('user-info') == null) {
             setTimeout(addButtons, 500);
             return;
         }
 
-        // Check if the panel already exists to avoid duplicate additions
-        if (document.getElementById("sidepanel-lux") !== null) {
+        // Check if the button already exists to avoid duplicate additions
+        if (document.getElementById("geoportal-button") !== null) {
             console.log("Button already exists.");
             return;
         }
 
-        var addon = document.createElement('section');
-        addon.id = "lux-addon";
-        addon.innerHTML = '<b><p style="font-family:verdana; font-size:16px;">PORTALE LUXEMBURG</b></p>';
+        // Find the "Skripte"-Panel to add the button to it
+        var scriptsPanel = document.querySelector('.side-panel-section-content');
 
-        var userTabs = document.getElementById('user-info');
-        var navTabs = document.getElementsByClassName('nav-tabs', userTabs)[0];
-        var tabContent = document.getElementsByClassName('tab-content', userTabs)[0];
+        if (scriptsPanel) {
+            var versionInfo = $('<p style="font-family:verdana; font-size:14px;">Links to Geoportals Luxembourg v 2024.09.28.2</p>');
+            var luxButton = createLuxButton();
+            luxButton.attr('id', 'geoportal-button');
+            
+            scriptsPanel.append(versionInfo);
+            scriptsPanel.append(luxButton);
 
-        var newtab = document.createElement('li');
-        newtab.innerHTML = '<a href="#sidepanel-lux" data-toggle="tab">Geo LUX</a>';
-        navTabs.appendChild(newtab);
-
-        addon.id = "sidepanel-lux";
-        addon.className = "tab-pane";
-        tabContent.appendChild(addon);
-
-        // Add the button to the panel
-        var luxButton = createLuxButton();
-        $("#sidepanel-lux").append(luxButton);
-
-        console.log("Button added successfully");
+            console.log("Button and version info added successfully to the Skripte panel");
+        } else {
+            console.error("Could not find the Skripte panel to add the button.");
+        }
     }
 
     addButtons();

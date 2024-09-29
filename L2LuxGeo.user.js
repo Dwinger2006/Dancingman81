@@ -2,17 +2,13 @@
 // @name         WME Link to Geoportal Luxembourg and Traffic Info
 // @description  Adds buttons to Waze Map Editor to open the Geoportal of Luxembourg and the Luxembourg traffic info portal.
 // @namespace    https://github.com/Dwinger2006/Dancingman81   
-// @version      2024.09.27.8
+// @version      2024.09.29.1
 // @include      https://*.waze.com/editor*
-// @include      https://*.waze.com/*/editor*
+// @include      https://*.waze.com/*editor*
 // @grant        none
+// @require      https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.6.2/proj4.js
 // @author       Dancingman81
-// @updateURL    https://github.com/Dwinger2006/Dancingman81/blob/main/L2LuxGeo.user.js
-// @downloadURL  https://github.com/Dwinger2006/Dancingman81/blob/main/L2LuxGeo.user.js
-// @homepageURL  https://github.com/Dwinger2006/Dancingman81
-// @license      MIT
 // ==/UserScript==
-
 
 (function() {
     'use strict';
@@ -34,14 +30,38 @@
         return (found === -1) ? 13 : 2;
     }
 
-    // Function to display the current script version
-    function displayScriptVersion() {
-        var version = '2024.09.27.8'; // Update this manually with each new version
-        var versionText = $('<p style="font-size: 12px; color: grey;">Script Version: ' + version + '</p>');
-        $('#sidepanel-lux').prepend(versionText);
+    // Function to convert WGS84 coordinates to LUREF
+    function convertCoordinates(lon, lat) {
+        var wgs84Proj = "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs";
+        var lurefProj = "+proj=lcc +lat_1=49.833333 +lat_2=51.166667 +lat_0=49 +lon_0=6 +x_0=80000 +y_0=100000 +ellps=GRS80 +units=m +no_defs";
+        return proj4(wgs84Proj, lurefProj, [lon, lat]);
     }
 
-    displayScriptVersion();
+    // Function to convert decimal degrees to DMS (degrees, minutes, seconds)
+    function toDMS(deg, dir) {
+        var d = Math.floor(deg);
+        var minfloat = (deg - d) * 60;
+        var m = Math.floor(minfloat);
+        var secfloat = (minfloat - m) * 60;
+        var s = Math.round(secfloat);
+        if (s == 60) {
+            m++;
+            s = 0;
+        }
+        if (m == 60) {
+            d++;
+            m = 0;
+        }
+        return d + "° " + m + "′ " + s + "″ " + dir;
+    }
+
+    // Function to convert decimal degrees to DM (degrees, decimal minutes)
+    function toDM(deg, dir) {
+        var d = Math.floor(deg);
+        var minfloat = (deg - d) * 60;
+        var m = minfloat.toFixed(5);
+        return d + "° " + m + "′ " + dir;
+    }
 
     // Function to create Luxembourg Geoportal Button
     function createLuxButton() {
@@ -56,14 +76,16 @@
 
             zoom = adjustZoomForGeoportal(zoom);
 
-            // WGS84-Projektion (EPSG:4326) zu LUREF-Projektion (EPSG:2169) umwandeln
-            var wgs84Proj = "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs";
-            var lurefProj = "+proj=lcc +lat_1=49.833333 +lat_2=51.166667 +lat_0=49 +lon_0=6 +x_0=80000 +y_0=100000 +ellps=GRS80 +units=m +no_defs";
-
             // Umwandlung der WGS84-Koordinaten zu LUREF
-            var luref = proj4(wgs84Proj, lurefProj, [lon, lat]);
+            var luref = convertCoordinates(lon, lat);
 
             console.log("LUREF Koordinaten:", luref);
+
+            // Ausgabe der Ergebnisse in der Konsole
+            console.log("Luref: " + luref[0].toFixed(0) + " E | " + luref[1].toFixed(0) + " N");
+            console.log("Lon/Lat WGS84: " + lon.toFixed(5) + " E | " + lat.toFixed(5) + " N");
+            console.log("Lon/Lat WGS84 DMS: " + toDMS(lon, 'E') + " | " + toDMS(lat, 'N'));
+            console.log("Lon/Lat WGS84 DM: " + toDM(lon, 'E') + " | " + toDM(lat, 'N'));
 
             // Verwende die umgerechneten Koordinaten in der URL
             var mapsUrl = 'https://map.geoportail.lu/theme/main?lang=de&version=3&zoom=' + zoom + '&X=' + luref[0] + '&Y=' + luref[1] + '&rotation=0&layers=549-542-302-269-320-2056-351-152-685-686&opacities=1-0-0-0-1-0-1-1-1-1&time=------------------&bgLayer=streets_jpeg&crosshair=true';
@@ -121,19 +143,28 @@
         newtab.innerHTML = '<a href="#sidepanel-lux" data-toggle="tab">Geo + Traffic LUX</a>';
         navTabs.appendChild(newtab);
 
-        addon.id = "sidepanel-lux";
-        addon.className = "tab-pane";
-        tabContent.appendChild(addon);
+        var newtabContent = document.createElement('div');
+        newtabContent.id = "sidepanel-lux";
+        newtabContent.className = "tab-pane";
+        newtabContent.appendChild(addon);
 
-        // Add both buttons to the panel
+        tabContent.appendChild(newtabContent);
+
         var luxButton = createLuxButton();
         var trafficButton = createTrafficButton();
-        
-        $("#sidepanel-lux").append(luxButton);
-        $("#sidepanel-lux").append(trafficButton);
 
-        console.log("Buttons added successfully");
+        addon.appendChild(luxButton[0]);
+        addon.appendChild(trafficButton[0]);
     }
 
-    addButtons();
+    // Initialize the script
+    function initialize() {
+        if (document.readyState === 'complete') {
+            addButtons();
+        } else {
+            window.addEventListener('load', addButtons);
+        }
+    }
+
+    initialize();
 })();

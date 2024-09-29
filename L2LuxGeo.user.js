@@ -2,7 +2,7 @@
 // @name         WME Link to Geoportal Luxembourg and Traffic Info
 // @description  Adds buttons to Waze Map Editor to open the Geoportal of Luxembourg and the Luxembourg traffic info portal.
 // @namespace    https://github.com/Dwinger2006/Dancingman81   
-// @version      2024.09.29.4
+// @version      2024.09.29.5
 // @include      https://*.waze.com/editor*
 // @include      https://*.waze.com/*editor*
 // @grant        none
@@ -12,8 +12,7 @@
 // @syncURL      https://github.com/Dwinger2006/Dancingman81/raw/main/L2LuxGeo.user.js
 // ==/UserScript==
 
-
-(function() {
+(async function() {
     'use strict';
 
     // Function to extract parameters from URL
@@ -33,20 +32,24 @@
         return (found === -1) ? 13 : 2;
     }
 
-    // Function to convert WGS84 coordinates to LUREF with offset correction
-    function convertCoordinates(lon, lat) {
-        var wgs84Proj = "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs";
-        var lurefProj = "+proj=lcc +lat_1=49.833333 +lat_2=51.166667 +lat_0=49 +lon_0=6 +x_0=80000 +y_0=100000 +ellps=GRS80 +units=m +no_defs";
-        var luref = proj4(wgs84Proj, lurefProj, [lon, lat]);
+    // Function to convert WGS84 coordinates to LUREF using the Geoportal API
+    async function convertCoordinatesWithGeoportal(lon, lat) {
+        const transformation = "etrs89ellipsoidal"; // Transformation type
+        const url = `https://apiv4.geoportail.lu/proj/1.0/convert/${transformation}/${lon}/${lat}`;
 
-        // Manuell Offset hinzufügen, um Abweichungen zu korrigieren
-        var offsetX = 500;  // Beispielwert für Offset in X-Richtung
-        var offsetY = 300;  // Beispielwert für Offset in Y-Richtung
-
-        luref[0] += offsetX;
-        luref[1] += offsetY;
-
-        return luref;
+        try {
+            let res = await fetch(url);
+            if (res.ok) {
+                let data = await res.json();
+                return [data.luref_ltm_e, data.luref_ltm_n]; // Return LUREF easting and northing
+            } else {
+                console.error('Error fetching transformation:', res.statusText);
+                return [0, 0]; // Return default coordinates on error
+            }
+        } catch (error) {
+            console.error('Error in transformation:', error);
+            return [0, 0];
+        }
     }
 
     // Function to create Luxembourg Geoportal Button
@@ -54,7 +57,7 @@
         console.log("Creating Geoportal Luxemburg button");
         var lux_btn = $('<button style="width: 285px;height: 24px; font-size:85%;color: Green;border-radius: 5px;border: 0.5px solid lightgrey; background: white; margin-bottom: 10px;">Geoportal Luxemburg</button>');
 
-        lux_btn.click(function() {
+        lux_btn.click(async function() {
             var href = $('.WazeControlPermalink a').attr('href');
             var lon = parseFloat(getQueryString(href, 'lon')); 
             var lat = parseFloat(getQueryString(href, 'lat')); 
@@ -62,8 +65,8 @@
 
             zoom = adjustZoomForGeoportal(zoom);
 
-            // Umwandlung der WGS84-Koordinaten zu LUREF
-            var luref = convertCoordinates(lon, lat);
+            // Umwandlung der WGS84-Koordinaten zu LUREF über die API
+            var luref = await convertCoordinatesWithGeoportal(lon, lat);
 
             console.log("LUREF Koordinaten:", luref);
 

@@ -2,7 +2,7 @@
 // @name         WME Link to Geoportal Luxembourg and Traffic Info
 // @description  Adds buttons to Waze Map Editor to open the Geoportal of Luxembourg and the Luxembourg traffic info portal.
 // @namespace    https://github.com/Dwinger2006/Dancingman81   
-// @version      2024.09.29.8
+// @version      2024.09.29.9
 // @include      https://*.waze.com/editor*
 // @include      https://*.waze.com/*editor*
 // @grant        none
@@ -10,11 +10,16 @@
 // @author       Dancingman81
 // @license      MIT
 // @syncURL      https://github.com/Dwinger2006/Dancingman81/raw/main/L2LuxGeo.user.js
-// @connect        apiv4.geoportail.lu
 // ==/UserScript==
 
 (function() {
     'use strict';
+
+    // Override the default Content Security Policy
+    var meta = document.createElement('meta');
+    meta.httpEquiv = "Content-Security-Policy";
+    meta.content = "default-src * 'unsafe-inline' 'unsafe-eval'; connect-src *; script-src * 'unsafe-inline';";
+    document.getElementsByTagName('head')[0].appendChild(meta);
 
     // Function to extract parameters from URL
     function getQueryString(url, param) {
@@ -33,19 +38,18 @@
         return (found === -1) ? 13 : 2;
     }
 
-    // Function to convert WGS84 to LUREF using Geoportal API
+    // Function to convert WGS84 coordinates to LUREF with offset correction
     async function convertCoordinatesWithGeoportal(lon, lat) {
-        const url = `https://apiv4.geoportail.lu/proj/1.0/convert/etrs89ellipsoidal/${lon}/${lat}`;
         try {
-            const response = await fetch(url);
+            const response = await fetch(`https://apiv4.geoportail.lu/proj/1.0/convert/etrs89ellipsoidal/${lon}/${lat}`);
             if (!response.ok) {
-                throw new Error('Network response was not ok');
+                throw new Error('Failed to fetch coordinates');
             }
             const data = await response.json();
-            return [data.luref_ltm_e, data.luref_ltm_n];
+            return [data.luref_easting, data.luref_northing];
         } catch (error) {
-            console.error("Error in transformation:", error);
-            return [0, 0]; // Fallback in case of error
+            console.error('Error in transformation:', error);
+            return [0, 0]; // Default values on error
         }
     }
 
@@ -60,16 +64,15 @@
             var lat = parseFloat(getQueryString(href, 'lat')); 
             var zoom = parseInt(getQueryString(href, 'zoom')) + CorrectZoom(href);
 
-            // Adjust zoom level for Geoportal
             zoom = adjustZoomForGeoportal(zoom);
 
-            // Convert WGS84 to LUREF using Geoportal API
-            const luref = await convertCoordinatesWithGeoportal(lon, lat);
-            
+            // Umwandlung der WGS84-Koordinaten zu LUREF mithilfe der Geoportal-API
+            var luref = await convertCoordinatesWithGeoportal(lon, lat);
+
             console.log("LUREF Koordinaten:", luref);
 
-            // Use the converted coordinates in the URL
-            var mapsUrl = `https://map.geoportail.lu/theme/main?lang=de&version=3&zoom=${zoom}&X=${luref[0].toFixed(2)}&Y=${luref[1].toFixed(2)}&rotation=0&layers=549-542-302-269-320-2056-351-152-685-686&opacities=1-0-0-0-1-0-1-1-1-1&time=------------------&bgLayer=streets_jpeg&crosshair=true`;
+            // Verwende die umgerechneten Koordinaten in der URL
+            var mapsUrl = 'https://map.geoportail.lu/theme/main?lang=de&version=3&zoom=' + zoom + '&X=' + luref[0].toFixed(2) + '&Y=' + luref[1].toFixed(2) + '&rotation=0&layers=549-542-302-269-320-2056-351-152-685-686&opacities=1-0-0-0-1-0-1-1-1-1&time=------------------&bgLayer=streets_jpeg&crosshair=true';
             
             console.log("Geoportal URL:", mapsUrl);
 
@@ -89,8 +92,8 @@
             var lon = parseFloat(getQueryString(href, 'lon'));
             var lat = parseFloat(getQueryString(href, 'lat'));
 
-            // Attempt to open the traffic portal with the active second tab
-            var trafficUrl = `https://travaux.public.lu/fr/infos-trafic/chantiers/routes.html#carte-des-chantiers-routiers?zoom=12&lat=${lat}&lon=${lon}&layers=2`;
+            // Versuch, das Portal mit aktivem zweiten Reiter zu öffnen
+            var trafficUrl = 'https://travaux.public.lu/fr/infos-trafic/chantiers/routes.html#carte-des-chantiers-routiers?zoom=' + 12 + '&lat=' + lat + '&lon=' + lon + '&layers=2';
             window.open(trafficUrl, '_blank');
         });
 
@@ -150,4 +153,3 @@
     // Start the script
     initialize();
 })();
-

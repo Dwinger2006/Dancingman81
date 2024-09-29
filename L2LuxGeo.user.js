@@ -2,7 +2,7 @@
 // @name         WME Link to Geoportal Luxembourg and Traffic Info
 // @description  Adds buttons to Waze Map Editor to open the Geoportal of Luxembourg and the Luxembourg traffic info portal.
 // @namespace    https://github.com/Dwinger2006/Dancingman81   
-// @version      2024.09.29.2
+// @version      2024.09.29.4
 // @include      https://*.waze.com/editor*
 // @include      https://*.waze.com/*editor*
 // @grant        none
@@ -31,11 +31,20 @@
         return (found === -1) ? 13 : 2;
     }
 
-    // Function to convert WGS84 coordinates to LUREF
+    // Function to convert WGS84 coordinates to LUREF with offset correction
     function convertCoordinates(lon, lat) {
         var wgs84Proj = "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs";
         var lurefProj = "+proj=lcc +lat_1=49.833333 +lat_2=51.166667 +lat_0=49 +lon_0=6 +x_0=80000 +y_0=100000 +ellps=GRS80 +units=m +no_defs";
-        return proj4(wgs84Proj, lurefProj, [lon, lat]);
+        var luref = proj4(wgs84Proj, lurefProj, [lon, lat]);
+
+        // Manuell Offset hinzufügen, um Abweichungen zu korrigieren
+        var offsetX = 500;  // Beispielwert für Offset in X-Richtung
+        var offsetY = 300;  // Beispielwert für Offset in Y-Richtung
+
+        luref[0] += offsetX;
+        luref[1] += offsetY;
+
+        return luref;
     }
 
     // Function to create Luxembourg Geoportal Button
@@ -139,5 +148,6 @@
         }
     }
 
+    // Start the script
     initialize();
 })();

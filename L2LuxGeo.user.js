@@ -10,6 +10,7 @@
 // @author       Dancingman81
 // @license      MIT
 // @syncURL      https://github.com/Dwinger2006/Dancingman81/raw/main/L2LuxGeo.user.js
+// @connect        apiv4.geoportail.lu
 // ==/UserScript==
 
 (function() {

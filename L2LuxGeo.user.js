@@ -9,7 +9,9 @@
 // @require      https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.6.2/proj4.js
 // @author       Dancingman81
 // @license      MIT
+// @syncURL      https://github.com/Dwinger2006/Dancingman81/raw/main/L2LuxGeo.user.js
 // ==/UserScript==
+
 
 (function() {
     'use strict';

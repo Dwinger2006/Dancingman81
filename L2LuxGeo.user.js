@@ -2,7 +2,7 @@
 // @name         WME Link to Geoportal Luxembourg and Traffic Info
 // @description  Adds buttons to Waze Map Editor to open the Geoportal of Luxembourg and the Luxembourg traffic info portal.
 // @namespace    https://github.com/Dwinger2006/Dancingman81   
-// @version      2024.09.29.5
+// @version      2024.09.29.6
 // @include      https://*.waze.com/editor*
 // @include      https://*.waze.com/*editor*
 // @grant        none
@@ -38,10 +38,17 @@
         const url = `https://apiv4.geoportail.lu/proj/1.0/convert/${transformation}/${lon}/${lat}`;
 
         try {
+            console.log('Sending request to:', url);
             let res = await fetch(url);
             if (res.ok) {
                 let data = await res.json();
-                return [data.luref_ltm_e, data.luref_ltm_n]; // Return LUREF easting and northing
+                console.log('Received data from API:', data);
+                if (data.luref_ltm_e && data.luref_ltm_n) {
+                    return [data.luref_ltm_e, data.luref_ltm_n]; // Return LUREF easting and northing
+                } else {
+                    console.error('Invalid data received:', data);
+                    return [0, 0]; // Return default coordinates on error
+                }
             } else {
                 console.error('Error fetching transformation:', res.statusText);
                 return [0, 0]; // Return default coordinates on error
@@ -67,6 +74,10 @@
 
             // Umwandlung der WGS84-Koordinaten zu LUREF über die API
             var luref = await convertCoordinatesWithGeoportal(lon, lat);
+
+            if (luref[0] === 0 && luref[1] === 0) {
+                console.error("Transformation failed, using default coordinates.");
+            }
 
             console.log("LUREF Koordinaten:", luref);
 

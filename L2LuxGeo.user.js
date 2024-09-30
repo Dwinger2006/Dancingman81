@@ -1,9 +1,8 @@
-
 // ==UserScript==
 // @name         WME Link to Geoportal Luxembourg and Traffic Info
 // @description  Adds buttons to Waze Map Editor to open the Geoportal of Luxembourg and the Luxembourg traffic info portal.
 // @namespace    https://github.com/Dwinger2006/Dancingman81   
-// @version      2024.09.29.11
+// @version      2024.09.30.1
 // @include      https://*.waze.com/editor*
 // @include      https://*.waze.com/*editor*
 // @grant        none
@@ -13,7 +12,7 @@
 // @syncURL      https://github.com/Dwinger2006/Dancingman81/raw/main/L2LuxGeo.user.js
 // ==/UserScript==
 
-(function() {
+(async function() {
     'use strict';
 
     // Function to extract parameters from URL
@@ -33,31 +32,24 @@
         return (found === -1) ? 13 : 2;
     }
 
-    // Function to convert WGS84 coordinates to LUREF with offset correction
+    // Function to convert WGS84 coordinates to LUREF
     function convertCoordinates(lon, lat) {
         var wgs84Proj = "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs";
         var lurefProj = "+proj=lcc +lat_1=49.833333 +lat_2=51.166667 +lat_0=49 +lon_0=6 +x_0=80000 +y_0=100000 +ellps=GRS80 +units=m +no_defs";
-        var luref = proj4(wgs84Proj, lurefProj, [lon, lat]);
-
-        // Applying average offsets to correct the LUREF coordinates
-        var offsetX = 62832.74;  // Calculated average X-offset
-        var offsetY = 72901.08;  // Calculated average Y-offset
-
-        luref[0] += offsetX;
-        luref[1] += offsetY;
-
-        return luref;
+        return proj4(wgs84Proj, lurefProj, [lon, lat]);
     }
 
     // Function to create Luxembourg Geoportal Button
     function createLuxButton() {
-        console.log("Creating Geoportal Luxemburg button");
-        var lux_btn = $('<button style="width: 285px;height: 24px; font-size:85%;color: Green;border-radius: 5px;border: 0.5px solid lightgrey; background: white; margin-bottom: 10px;">Geoportal Luxemburg</button>');
+        console.log("Creating Geoportal Luxembourg button");
+        var lux_btn = document.createElement('button');
+        lux_btn.style = "width: 285px;height: 24px; font-size:85%;color: Green;border-radius: 5px;border: 0.5px solid lightgrey; background: white; margin-bottom: 10px;";
+        lux_btn.innerHTML = "Geoportal Luxemburg";
 
-        lux_btn.click(function() {
-            var href = $('.WazeControlPermalink a').attr('href');
-            var lon = parseFloat(getQueryString(href, 'lon')); 
-            var lat = parseFloat(getQueryString(href, 'lat')); 
+        lux_btn.addEventListener('click', function() {
+            var href = document.querySelector('.WazeControlPermalink a').getAttribute('href');
+            var lon = parseFloat(getQueryString(href, 'lon'));
+            var lat = parseFloat(getQueryString(href, 'lat'));
             var zoom = parseInt(getQueryString(href, 'zoom')) + CorrectZoom(href);
 
             zoom = adjustZoomForGeoportal(zoom);
@@ -66,6 +58,10 @@
             var luref = convertCoordinates(lon, lat);
 
             console.log("LUREF Koordinaten:", luref);
+
+            // Ausgabe der Ergebnisse in der Konsole
+            console.log("Luref: " + luref[0].toFixed(2) + " E | " + luref[1].toFixed(2) + " N");
+            console.log("Lon/Lat WGS84: " + lon.toFixed(5) + " E | " + lat.toFixed(5) + " N");
 
             // Verwende die umgerechneten Koordinaten in der URL
             var mapsUrl = 'https://map.geoportail.lu/theme/main?lang=de&version=3&zoom=' + zoom + '&X=' + luref[0].toFixed(2) + '&Y=' + luref[1].toFixed(2) + '&rotation=0&layers=549-542-302-269-320-2056-351-152-685-686&opacities=1-0-0-0-1-0-1-1-1-1&time=------------------&bgLayer=streets_jpeg&crosshair=true';
@@ -81,10 +77,12 @@
     // Function to create Luxembourg Traffic Info Button
     function createTrafficButton() {
         console.log("Creating Traffic Info button");
-        var traffic_btn = $('<button style="width: 285px;height: 24px; font-size:85%;color: Red;border-radius: 5px;border: 0.5px solid lightgrey; background: white;">Verkehrsinformationen Luxemburg</button>');
+        var traffic_btn = document.createElement('button');
+        traffic_btn.style = "width: 285px;height: 24px; font-size:85%;color: Red;border-radius: 5px;border: 0.5px solid lightgrey; background: white;";
+        traffic_btn.innerHTML = "Verkehrsinformationen Luxemburg";
 
-        traffic_btn.click(function() {
-            var href = $('.WazeControlPermalink a').attr('href');
+        traffic_btn.addEventListener('click', function() {
+            var href = document.querySelector('.WazeControlPermalink a').getAttribute('href');
             var lon = parseFloat(getQueryString(href, 'lon'));
             var lat = parseFloat(getQueryString(href, 'lat'));
 
@@ -133,8 +131,8 @@
         var luxButton = createLuxButton();
         var trafficButton = createTrafficButton();
 
-        addon.appendChild(luxButton[0]);
-        addon.appendChild(trafficButton[0]);
+        addon.appendChild(luxButton);
+        addon.appendChild(trafficButton);
     }
 
     // Initialize the script
@@ -146,6 +144,5 @@
         }
     }
 
-    // Start the script
     initialize();
 })();

@@ -2,7 +2,7 @@
 // @name         WME Link to Geoportal Luxembourg and Traffic Info
 // @description  Adds buttons to Waze Map Editor to open the Geoportal of Luxembourg and the Luxembourg traffic info portal.
 // @namespace    https://github.com/Dwinger2006/Dancingman81   
-// @version      2024.10.01.05
+// @version      2024.10.01.06
 // @include      https://*.waze.com/editor*
 // @include      https://*.waze.com/*editor*
 // @grant        none
@@ -13,31 +13,35 @@
 // @updateURL    https://update.greasyfork.org/scripts/510495/WME%20Link%20to%20Geoportal%20Luxembourg%20and%20Traffic%20Info.meta.js
 // ==/UserScript==
 
+// Thanks to vertexcode for the support with the conversion and implementation
+// The code for transforming coordinates to the Luxembourgish system is based on a solution by vertexcode,
+// which ultimately made the script work.
+
 (async function() {
     'use strict';
 
-    // Initialisierung der Buttons, sobald WME bereit ist
-function initialize() {
-    if (typeof W !== 'undefined' && W.userscripts && W.userscripts.state.isReady) {
-        addButtons();
-    } else {
-        console.log("WME is not ready yet, retrying...");
-        document.addEventListener("wme-ready", initialize, { once: true });
+    // Initialize buttons once WME is ready
+    function initialize() {
+        if (typeof W !== 'undefined' && W.userscripts && W.userscripts.state.isReady) {
+            addButtons();
+        } else {
+            console.log("WME is not ready yet, retrying...");
+            document.addEventListener("wme-ready", initialize, { once: true });
+        }
     }
-}
 
-    // Funktion zum Extrahieren von Parametern aus der URL
+    // Function to extract parameters from a URL
     function getQueryString(url, param) {
         var params = new URLSearchParams(url.split('?')[1]);
         return params.get(param);
     }
 
-    // Funktion zum Erstellen des Buttons für das Geoportal Luxemburg
+    // Function to create the button for Geoportal Luxembourg
     function createLuxButton() {
         console.log("Creating Geoportal Luxembourg button");
         var lux_btn = document.createElement('button');
         lux_btn.style = "width: 285px;height: 24px; font-size:85%;color: Green;border-radius: 5px;border: 0.5px solid lightgrey; background: white; margin-bottom: 10px;";
-        lux_btn.innerHTML = "Geoportal Luxemburg";
+        lux_btn.innerHTML = "Geoportal Luxembourg";
 
         lux_btn.addEventListener('click', function() {
             if (W.map) {
@@ -45,7 +49,7 @@ function initialize() {
                 let point = new OpenLayers.LonLat(coords.lon, coords.lat);
                 let transformed = point.transform('EPSG:4326', 'EPSG:3857');
 
-                // Verwende die umgerechneten Koordinaten in der URL
+                // Use the transformed coordinates in the URL
                 var mapsUrl = 'https://map.geoportail.lu/theme/main?lang=de&version=3&zoom=' + coords.zoom + '&X=' + transformed.lon + '&Y=' + transformed.lat + '&rotation=0&layers=549-542-302-269-320-2056-351-152-685-686&opacities=1-0-0-0-1-0-1-1-1-1&time=------------------&bgLayer=streets_jpeg&crosshair=true';
                 
                 console.log("Geoportal URL:", mapsUrl);
@@ -58,12 +62,12 @@ function initialize() {
         return lux_btn;
     }
 
-    // Funktion zum Erstellen des Buttons für Verkehrsinformationen Luxemburg
+    // Function to create the button for Luxembourg traffic information
     function createTrafficButton() {
         console.log("Creating Traffic Info button");
         var traffic_btn = document.createElement('button');
         traffic_btn.style = "width: 285px;height: 24px; font-size:85%;color: Red;border-radius: 5px;border: 0.5px solid lightgrey; background: white;";
-        traffic_btn.innerHTML = "Verkehrsinformationen Luxemburg";
+        traffic_btn.innerHTML = "Traffic Info Luxembourg";
 
         traffic_btn.addEventListener('click', function() {
             var href = document.querySelector('.WazeControlPermalink a')?.getAttribute('href');
@@ -71,7 +75,7 @@ function initialize() {
                 var lon = parseFloat(getQueryString(href, 'lon'));
                 var lat = parseFloat(getQueryString(href, 'lat'));
 
-                // Versuch, das Portal mit aktivem zweiten Reiter zu öffnen
+                // Attempt to open the portal with the second tab active
                 var trafficUrl = 'https://travaux.public.lu/fr/infos-trafic/chantiers/routes.html#carte-des-chantiers-routiers?zoom=' + 12 + '&lat=' + lat + '&lon=' + lon + '&layers=2';
                 window.open(trafficUrl, '_blank');
             } else {
@@ -82,7 +86,7 @@ function initialize() {
         return traffic_btn;
     }
 
-    // Funktion zum Hinzufügen der Buttons zum WME-Seitenpanel
+    // Function to add buttons to the WME side panel
     function addButtons() {
         console.log("Adding buttons...");
 
@@ -92,7 +96,7 @@ function initialize() {
             return;
         }
 
-        // Prüfen, ob das Panel bereits existiert, um doppelte Einträge zu vermeiden
+        // Check if the panel already exists to avoid duplicate entries
         if (document.getElementById("sidepanel-lux") !== null) {
             console.log("Buttons already exist.");
             return;
@@ -100,7 +104,7 @@ function initialize() {
 
         var addon = document.createElement('section');
         addon.id = "lux-addon";
-        addon.innerHTML = '<b><p style="font-family:verdana; font-size:16px;">PORTALE LUXEMBURG</b></p>';
+        addon.innerHTML = '<b><p style="font-family:verdana; font-size:16px;">PORTALS LUXEMBOURG</b></p>';
 
         var userTabs = document.getElementById('user-info');
         var navTabs = userTabs?.getElementsByClassName('nav-tabs')[0];
@@ -130,10 +134,7 @@ function initialize() {
         }
     }
 
-    // Initialisierung des Skripts
+    // Initialize the script
     initialize();
 
-    // Dank an vertexcode für die Unterstützung bei der Umrechnung und Umsetzung
-    // Der Code zur Umwandlung der Koordinaten in das Luxemburgische System basiert auf einer Lösung von vertexcode,
-    // die das Skript letztendlich zum Laufen gebracht hat.
 })();

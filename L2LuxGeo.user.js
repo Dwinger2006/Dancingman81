@@ -2,7 +2,7 @@
 // @name         WME Link to Geoportal Luxembourg and Traffic Info
 // @description  Adds buttons to Waze Map Editor to open the Geoportal of Luxembourg and the Luxembourg traffic info portal.
 // @namespace    https://github.com/Dwinger2006/Dancingman81   
-// @version      2024.09.30.1
+// @version      2024.10.01.1
 // @include      https://*.waze.com/editor*
 // @include      https://*.waze.com/*editor*
 // @grant        none
@@ -36,7 +36,13 @@
     function convertCoordinates(lon, lat) {
         var wgs84Proj = "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs";
         var lurefProj = "+proj=lcc +lat_1=49.833333 +lat_2=51.166667 +lat_0=49 +lon_0=6 +x_0=80000 +y_0=100000 +ellps=GRS80 +units=m +no_defs";
-        return proj4(wgs84Proj, lurefProj, [lon, lat]);
+        var luref = proj4(wgs84Proj, lurefProj, [lon, lat]);
+
+        // Anwendung des berechneten Offsets zur Korrektur
+        luref[0] += -223638.02; // Easting Offset
+        luref[1] += -5992967.10; // Northing Offset
+
+        return luref;
     }
 
     // Function to create Luxembourg Geoportal Button

@@ -17,14 +17,14 @@
     'use strict';
 
     // Initialisierung der Buttons, sobald WME bereit ist
-    function initialize() {
-        if (W && W.userscripts && W.userscripts.state.isReady) {
-            addButtons();
-        } else {
-            console.log("WME is not ready yet, retrying...");
-            document.addEventListener("wme-ready", addButtons, { once: true });
-        }
+function initialize() {
+    if (typeof W !== 'undefined' && W.userscripts && W.userscripts.state.isReady) {
+        addButtons();
+    } else {
+        console.log("WME is not ready yet, retrying...");
+        document.addEventListener("wme-ready", initialize, { once: true });
     }
+}
 
     // Funktion zum Extrahieren von Parametern aus der URL
     function getQueryString(url, param) {

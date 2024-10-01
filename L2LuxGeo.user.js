@@ -32,17 +32,19 @@
         return (found === -1) ? 13 : 2;
     }
 
-    // Function to convert WGS84 coordinates to LUREF
-    function convertCoordinates(lon, lat) {
-        var wgs84Proj = "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs";
-        var lurefProj = "+proj=lcc +lat_1=49.833333 +lat_2=51.166667 +lat_0=49 +lon_0=6 +x_0=80000 +y_0=100000 +ellps=GRS80 +units=m +no_defs";
-        var luref = proj4(wgs84Proj, lurefProj, [lon, lat]);
-
-        // Anwendung des berechneten Offsets zur Korrektur
-        luref[0] += -223638.02; // Easting Offset
-        luref[1] += -5992967.10; // Northing Offset
-
-        return luref;
+    // Function to convert WGS84 coordinates to LUREF with V3 Geoportal API
+    async function convertCoordinatesWithGeoportalV3(lon, lat) {
+        try {
+            const response = await fetch(`https://apiv3.geoportail.lu/proj/1.0/convert/etrs89ellipsoidal/${lon}/${lat}`);
+            if (!response.ok) {
+                throw new Error('Failed to fetch coordinates');
+            }
+            const data = await response.json();
+            return [data.luref_easting, data.luref_northing];
+        } catch (error) {
+            console.error('Error in transformation:', error);
+            return [0, 0]; // Default values on error
+        }
     }
 
     // Function to create Luxembourg Geoportal Button
@@ -52,7 +54,7 @@
         lux_btn.style = "width: 285px;height: 24px; font-size:85%;color: Green;border-radius: 5px;border: 0.5px solid lightgrey; background: white; margin-bottom: 10px;";
         lux_btn.innerHTML = "Geoportal Luxemburg";
 
-        lux_btn.addEventListener('click', function() {
+        lux_btn.addEventListener('click', async function() {
             var href = document.querySelector('.WazeControlPermalink a').getAttribute('href');
             var lon = parseFloat(getQueryString(href, 'lon'));
             var lat = parseFloat(getQueryString(href, 'lat'));
@@ -60,14 +62,10 @@
 
             zoom = adjustZoomForGeoportal(zoom);
 
-            // Umwandlung der WGS84-Koordinaten zu LUREF
-            var luref = convertCoordinates(lon, lat);
+            // Umwandlung der WGS84-Koordinaten zu LUREF mithilfe der Geoportal V3 API
+            var luref = await convertCoordinatesWithGeoportalV3(lon, lat);
 
             console.log("LUREF Koordinaten:", luref);
-
-            // Ausgabe der Ergebnisse in der Konsole
-            console.log("Luref: " + luref[0].toFixed(2) + " E | " + luref[1].toFixed(2) + " N");
-            console.log("Lon/Lat WGS84: " + lon.toFixed(5) + " E | " + lat.toFixed(5) + " N");
 
             // Verwende die umgerechneten Koordinaten in der URL
             var mapsUrl = 'https://map.geoportail.lu/theme/main?lang=de&version=3&zoom=' + zoom + '&X=' + luref[0].toFixed(2) + '&Y=' + luref[1].toFixed(2) + '&rotation=0&layers=549-542-302-269-320-2056-351-152-685-686&opacities=1-0-0-0-1-0-1-1-1-1&time=------------------&bgLayer=streets_jpeg&crosshair=true';

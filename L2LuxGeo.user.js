@@ -2,16 +2,15 @@
 // @name         WME Link to Geoportal Luxembourg and Traffic Info
 // @description  Adds buttons to Waze Map Editor to open the Geoportal of Luxembourg and the Luxembourg traffic info portal.
 // @namespace    https://github.com/Dwinger2006/Dancingman81   
-// @version      2024.10.01.2
+// @version      2024.10.01.3
 // @include      https://*.waze.com/editor*
 // @include      https://*.waze.com/*editor*
 // @grant        none
-// @require      https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.6.2/proj4.js
 // @author       Dancingman81
 // @license      MIT
 // @syncURL      https://github.com/Dwinger2006/Dancingman81/raw/main/L2LuxGeo.user.js
-// @downloadURL https://update.greasyfork.org/scripts/510495/WME%20Link%20to%20Geoportal%20Luxembourg%20and%20Traffic%20Info.user.js
-// @updateURL https://update.greasyfork.org/scripts/510495/WME%20Link%20to%20Geoportal%20Luxembourg%20and%20Traffic%20Info.meta.js
+// @downloadURL  https://update.greasyfork.org/scripts/510495/WME%20Link%20to%20Geoportal%20Luxembourg%20and%20Traffic%20Info.user.js
+// @updateURL    https://update.greasyfork.org/scripts/510495/WME%20Link%20to%20Geoportal%20Luxembourg%20and%20Traffic%20Info.meta.js
 // ==/UserScript==
 
 (async function() {
@@ -31,8 +30,13 @@
         lux_btn.innerHTML = "Geoportal Luxemburg";
 
         lux_btn.addEventListener('click', function() {
+            if (typeof W === 'undefined' || typeof OpenLayers === 'undefined') {
+                console.error("W or OpenLayers object not available");
+                return;
+            }
+
             let coords = W.map.getUnvalidatedUnprojectedCenter();
-            let point = new OpenLayers.LonLat(coords.lon, coords.lat)
+            let point = new OpenLayers.LonLat(coords.lon, coords.lat);
             let transformed = point.transform('EPSG:4326', 'EPSG:3857');
 
             // Verwende die umgerechneten Koordinaten in der URL
@@ -67,49 +71,48 @@
     }
 
     // Function to add the buttons to the WME side panel
-function addButtons() {
-    console.log("Adding buttons...");
+    function addButtons() {
+        console.log("Adding buttons...");
 
-    if (!W.userscripts.state.isReady) {
-        console.log("WME is not ready yet, retrying...");
-        document.addEventListener("wme-ready", addButtons, { once: true });
-        return;
+        if (!W || !W.userscripts || !W.userscripts.state.isReady) {
+            console.log("WME is not ready yet, retrying...");
+            document.addEventListener("wme-ready", addButtons, { once: true });
+            return;
+        }
+
+        // Check if the panel already exists to avoid duplicate additions
+        if (document.getElementById("sidepanel-lux") !== null) {
+            console.log("Buttons already exist.");
+            return;
+        }
+
+        var addon = document.createElement('section');
+        addon.id = "lux-addon";
+        addon.innerHTML = '<b><p style="font-family:verdana; font-size:16px;">PORTALE LUXEMBURG</b></p>';
+
+        var userTabs = document.getElementById('user-info');
+        var navTabs = document.getElementsByClassName('nav-tabs', userTabs)[0];
+        var tabContent = document.getElementsByClassName('tab-content', userTabs)[0];
+
+        var newtab = document.createElement('li');
+        newtab.innerHTML = '<a href="#sidepanel-lux" data-toggle="tab">Geo + Traffic LUX</a>';
+        navTabs.appendChild(newtab);
+
+        var newtabContent = document.createElement('div');
+        newtabContent.id = "sidepanel-lux";
+        newtabContent.className = "tab-pane";
+        newtabContent.appendChild(addon);
+
+        tabContent.appendChild(newtabContent);
+
+        var luxButton = createLuxButton();
+        var trafficButton = createTrafficButton();
+
+        addon.appendChild(luxButton);
+        addon.appendChild(trafficButton);
+
+        console.log("Buttons added successfully.");
     }
-
-    // Check if the panel already exists to avoid duplicate additions
-    if (document.getElementById("sidepanel-lux") !== null) {
-        console.log("Buttons already exist.");
-        return;
-    }
-
-    var addon = document.createElement('section');
-    addon.id = "lux-addon";
-    addon.innerHTML = '<b><p style="font-family:verdana; font-size:16px;">PORTALE LUXEMBURG</b></p>';
-
-    var userTabs = document.getElementById('user-info');
-    var navTabs = document.getElementsByClassName('nav-tabs', userTabs)[0];
-    var tabContent = document.getElementsByClassName('tab-content', userTabs)[0];
-
-    var newtab = document.createElement('li');
-    newtab.innerHTML = '<a href="#sidepanel-lux" data-toggle="tab">Geo + Traffic LUX</a>';
-    navTabs.appendChild(newtab);
-
-    var newtabContent = document.createElement('div');
-    newtabContent.id = "sidepanel-lux";
-    newtabContent.className = "tab-pane";
-    newtabContent.appendChild(addon);
-
-    tabContent.appendChild(newtabContent);
-
-    var luxButton = createLuxButton();
-    var trafficButton = createTrafficButton();
-
-    addon.appendChild(luxButton);
-    addon.appendChild(trafficButton);
-
-    console.log("Buttons added successfully.");
-}
-
 
     // Initialize the script
     function initialize() {

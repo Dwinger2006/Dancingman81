@@ -10,6 +10,8 @@
 // @author       Dancingman81
 // @license      MIT
 // @syncURL      https://github.com/Dwinger2006/Dancingman81/raw/main/L2LuxGeo.user.js
+// @downloadURL https://update.greasyfork.org/scripts/510495/WME%20Link%20to%20Geoportal%20Luxembourg%20and%20Traffic%20Info.user.js
+// @updateURL https://update.greasyfork.org/scripts/510495/WME%20Link%20to%20Geoportal%20Luxembourg%20and%20Traffic%20Info.meta.js
 // ==/UserScript==
 
 (async function() {
@@ -21,30 +23,6 @@
         return params.get(param);
     }
 
-    // Function to adjust zoom for Geoportal Luxembourg
-    function adjustZoomForGeoportal(wmeZoom) {
-        return wmeZoom;  // Passe den Zoom-Level für das Geoportal an
-    }
-
-    // Function to correct zoom level based on whether it's a livemap or editor
-    function CorrectZoom(link) {
-        var found = link.indexOf('livemap');
-        return (found === -1) ? 13 : 2;
-    }
-
-    // Function to convert WGS84 coordinates to LUREF
-    function convertCoordinates(lon, lat) {
-        var wgs84Proj = "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs";
-        var lurefProj = "+proj=lcc +lat_1=49.833333 +lat_2=51.166667 +lat_0=49 +lon_0=6 +x_0=80000 +y_0=100000 +ellps=GRS80 +units=m +no_defs";
-        var luref = proj4(wgs84Proj, lurefProj, [lon, lat]);
-
-        // Anwendung des berechneten Offsets zur Korrektur
-        luref[0] += -223638.02; // Easting Offset
-        luref[1] += -5992967.10; // Northing Offset
-
-        return luref;
-    }
-
     // Function to create Luxembourg Geoportal Button
     function createLuxButton() {
         console.log("Creating Geoportal Luxembourg button");
@@ -53,24 +31,12 @@
         lux_btn.innerHTML = "Geoportal Luxemburg";
 
         lux_btn.addEventListener('click', function() {
-            var href = document.querySelector('.WazeControlPermalink a').getAttribute('href');
-            var lon = parseFloat(getQueryString(href, 'lon'));
-            var lat = parseFloat(getQueryString(href, 'lat'));
-            var zoom = parseInt(getQueryString(href, 'zoom')) + CorrectZoom(href);
-
-            zoom = adjustZoomForGeoportal(zoom);
-
-            // Umwandlung der WGS84-Koordinaten zu LUREF
-            var luref = convertCoordinates(lon, lat);
-
-            console.log("LUREF Koordinaten:", luref);
-
-            // Ausgabe der Ergebnisse in der Konsole
-            console.log("Luref: " + luref[0].toFixed(2) + " E | " + luref[1].toFixed(2) + " N");
-            console.log("Lon/Lat WGS84: " + lon.toFixed(5) + " E | " + lat.toFixed(5) + " N");
+            let coords = W.map.getUnvalidatedUnprojectedCenter();
+            let point = new OpenLayers.LonLat(coords.lon, coords.lat)
+            let transformed = point.transform('EPSG:4326', 'EPSG:3857');
 
             // Verwende die umgerechneten Koordinaten in der URL
-            var mapsUrl = 'https://map.geoportail.lu/theme/main?lang=de&version=3&zoom=' + zoom + '&X=' + luref[0].toFixed(2) + '&Y=' + luref[1].toFixed(2) + '&rotation=0&layers=549-542-302-269-320-2056-351-152-685-686&opacities=1-0-0-0-1-0-1-1-1-1&time=------------------&bgLayer=streets_jpeg&crosshair=true';
+            var mapsUrl = 'https://map.geoportail.lu/theme/main?lang=de&version=3&zoom=' + coords.zoom + '&X=' + transformed.lon + '&Y=' + transformed.lat + '&rotation=0&layers=549-542-302-269-320-2056-351-152-685-686&opacities=1-0-0-0-1-0-1-1-1-1&time=------------------&bgLayer=streets_jpeg&crosshair=true';
             
             console.log("Geoportal URL:", mapsUrl);
 

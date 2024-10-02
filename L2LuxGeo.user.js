@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         WME Link to Geoportal Luxembourg and Traffic Info
 // @description  Adds buttons to Waze Map Editor to open the Geoportal of Luxembourg and the Luxembourg traffic info portal.
-// @namespace    https://github.com/Dwinger2006/Dancingman81   
-// @version      2024.10.01.06
+// @namespace    https://github.com/Dwinger2006/Dancingman81
+// @version      2024.10.02.01
 // @include      https://*.waze.com/editor*
 // @include      https://*.waze.com/*editor*
 // @grant        none
@@ -13,12 +13,11 @@
 // @updateURL    https://update.greasyfork.org/scripts/510495/WME%20Link%20to%20Geoportal%20Luxembourg%20and%20Traffic%20Info.meta.js
 // ==/UserScript==
 
-// Thanks to vertexcode for the support with the conversion and implementation
-// The code for transforming coordinates to the Luxembourgish system is based on a solution by vertexcode,
-// which ultimately made the script work.
-
 (async function() {
     'use strict';
+
+    // Reference for the Geoportal window
+    let geoportalWindow = null;
 
     // Initialize buttons once WME is ready
     function initialize() {
@@ -51,9 +50,16 @@
 
                 // Use the transformed coordinates in the URL
                 var mapsUrl = 'https://map.geoportail.lu/theme/main?lang=de&version=3&zoom=' + coords.zoom + '&X=' + transformed.lon + '&Y=' + transformed.lat + '&rotation=0&layers=549-542-302-269-320-2056-351-152-685-686&opacities=1-0-0-0-1-0-1-1-1-1&time=------------------&bgLayer=streets_jpeg&crosshair=true';
-                
+
                 console.log("Geoportal URL:", mapsUrl);
-                window.open(mapsUrl, '_blank');
+
+                // If the window is already open, focus it. Otherwise, open a new one.
+                if (geoportalWindow && !geoportalWindow.closed) {
+                    geoportalWindow.location.href = mapsUrl;
+                    geoportalWindow.focus();
+                } else {
+                    geoportalWindow = window.open(mapsUrl, 'geoportalLux');
+                }
             } else {
                 console.error("W.map is not available.");
             }

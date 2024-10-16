@@ -2,7 +2,7 @@
 // @name         WME Link to Geoportal Luxembourg and Traffic Info
 // @description  Adds buttons to Waze Map Editor to open the Geoportal of Luxembourg and the Luxembourg traffic info portal.
 // @namespace    https://github.com/Dwinger2006/Dancingman81
-// @version      2024.10.16.01
+// @version      2024.10.16.02
 // @include      https://*.waze.com/editor*
 // @include      https://*.waze.com/*editor*
 // @grant        none
@@ -13,7 +13,7 @@
 // @updateURL    https://update.greasyfork.org/scripts/510495/WME%20Link%20to%20Geoportal%20Luxembourg%20and%20Traffic%20Info.meta.js
 // ==/UserScript==
 
-var L2LuxGeo_version = '2024.10.16.01';
+var L2LuxGeo_version = '2024.10.16.02';
 
 (async function() {
     'use strict';
@@ -123,7 +123,7 @@ var L2LuxGeo_version = '2024.10.16.01';
 
         if (navTabs && tabContent) {
             var newtab = document.createElement('li');
-            newtab.innerHTML = '<a href="#stassidepanel-lux" data-toggle="tab">Geo + Traffic LUX</a>';
+            newtab.innerHTML = '<a href="#sidepanel-lux" data-toggle="tab">Geo + Traffic LUX</a>';
             navTabs.appendChild(newtab);
 
             var newtabContent = document.createElement('div');

@@ -123,7 +123,7 @@ var L2LuxGeo_version = '2024.10.16.01';
 
         if (navTabs && tabContent) {
             var newtab = document.createElement('li');
-            newtab.innerHTML = '<a href="#sidepanel-lux" data-toggle="tab">Geo + Traffic LUX</a>';
+            newtab.innerHTML = '<a href="#stassidepanel-lux" data-toggle="tab">Geo + Traffic LUX</a>';
             navTabs.appendChild(newtab);
 
             var newtabContent = document.createElement('div');

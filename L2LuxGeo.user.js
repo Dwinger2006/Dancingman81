@@ -2,7 +2,7 @@
 // @name         WME Link to Geoportal Luxembourg and Traffic Info
 // @description  Adds buttons to Waze Map Editor to open the Geoportal of Luxembourg and the Luxembourg traffic info portal.
 // @namespace    https://github.com/Dwinger2006/Dancingman81
-// @version      2024.10.02.01
+// @version      2024.10.16.01
 // @include      https://*.waze.com/editor*
 // @include      https://*.waze.com/*editor*
 // @grant        none
@@ -12,6 +12,8 @@
 // @downloadURL  https://update.greasyfork.org/scripts/510495/WME%20Link%20to%20Geoportal%20Luxembourg%20and%20Traffic%20Info.user.js
 // @updateURL    https://update.greasyfork.org/scripts/510495/WME%20Link%20to%20Geoportal%20Luxembourg%20and%20Traffic%20Info.meta.js
 // ==/UserScript==
+
+var L2LuxGeo_version = '2024.10.16.01';
 
 (async function() {
     'use strict';
@@ -110,7 +112,10 @@
 
         var addon = document.createElement('section');
         addon.id = "lux-addon";
-        addon.innerHTML = '<b><p style="font-family:verdana; font-size:16px;">PORTALS LUXEMBOURG</b></p>';
+        addon.innerHTML = `
+        <b><p style="font-family:verdana,sans-serif; font-size:16px;">PORTALS LUXEMBOURG</b></p>
+        <a href="https://greasyfork.org/de/scripts/510495-wme-link-to-geoportal-luxembourg-and-traffic-info" target="_blank">
+        <b>Links to VMZ DE Portals </b>v ${L2LuxGeo_version}</a><p>`;
 
         var userTabs = document.getElementById('user-info');
         var navTabs = userTabs?.getElementsByClassName('nav-tabs')[0];
